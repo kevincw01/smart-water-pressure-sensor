@@ -18,7 +18,7 @@ Flash the arduino nano every microcontroller with the source in the AnalogInput 
 
 Review the configuration.yaml file and add to your home assistant installation.  You will need to add the MAC address of your nano IOT 33 to the file.  You can find this in you router's DHCP table along with the IP address.
 
-<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/installed.jpg" alt="case open" width="300" height="900">
+<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/installed.jpg" alt="case open" width="400" height="800">
 
 ## Usage
 
