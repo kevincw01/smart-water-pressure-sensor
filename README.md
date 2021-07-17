@@ -6,7 +6,7 @@ This project pairs a pressure transducer with 2 microcontrollers which reads and
 
 Review the provided wiring diagram and wire it up.
 
-You will need to buy the nano iot 33 and nano every microcontrollers, a 0.5-4.5v) pressure transducer (I used [this](https://www.amazon.com/gp/product/B07Z3LRN6M/ref=ppx_yo_dt_b_asin_title_o08_s00?ie=UTF8&psc=1)) and a power supply (I just found an old 10v, 2A power supply).  
+You will need to buy the nano iot 33 and nano every microcontrollers, a 0.5-4.5v pressure transducer (I used [this](https://www.amazon.com/gp/product/B07Z3LRN6M/ref=ppx_yo_dt_b_asin_title_o08_s00?ie=UTF8&psc=1)) and a power supply (I just found an old 10v, 2A power supply).  
 
 NOTE: while they should be sufficient, lower voltage and current power supplies wouldn't work for me e.g. 5v/1A.  I suspect this is due to inrush on start-up and/or my poor circuit design skills :)
 
