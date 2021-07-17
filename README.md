@@ -3,6 +3,7 @@
 This project pairs a pressure transducer with 2 microcontrollers which reads and publishes the water pressure periodically to an mqtt server.  An example configuration.yaml is provided for integrating this smart sensor into home assistant.  Other smart home architectures can be supported by configuring the mqtt parameters appropriately.  
 
 ![case open](https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/case%20open.jpg | width=100)
+<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/case%20open.jpg" alt="case open" width="100" height="100">
 
 ## Installation
 
