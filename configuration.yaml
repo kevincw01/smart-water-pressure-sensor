@@ -1,0 +1,6 @@
+sensor:
+
+  - platform: mqtt
+    state_topic: "arduino/Arduino-YOUR_MAC_HERE/sensor/water-pressure"
+    name: "water pressure sensor"
+    unit_of_measurement: "psi"
