@@ -1,6 +1,10 @@
 # smart water pressure sensor
 
-This project pairs a pressure transducer with 2 microcontrollers which reads and publishes the water pressure periodically to an mqtt server.  An example configuration.yaml is provided for integrating this smart sensor into home assistant.  Other smart home architectures can be supported by configuring the mqtt parameters appropriately.  
+This project pairs a pressure transducer with 2 microcontrollers which read and publishe the water pressure periodically to an mqtt server.  
+
+Why 2 microcontrollers?  Because the pressure transducers I found are all 5V-based and all the microcontrollers I found that have wifi connectivity are 3.3V-based -- annoying.  According to what I read, you cannot use a voltage divider network or a ttl-voltage converter chip for these analog sensors and get reliable readings.  
+
+An example configuration.yaml is provided for integrating this smart sensor into home assistant.  Other smart home architectures can be supported by configuring the mqtt parameters appropriately.  
 
 <img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/case%20open.jpg" alt="case open" width="400" height="300">
 
