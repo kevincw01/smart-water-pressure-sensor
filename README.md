@@ -2,7 +2,7 @@
 
 This project pairs a pressure transducer with 2 microcontrollers which reads and publishes the water pressure periodically to an mqtt server.  An example configuration.yaml is provided for integrating this smart sensor into home assistant.  Other smart home architectures can be supported by configuring the mqtt parameters appropriately.  
 
-<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/case%20open.jpg" alt="case open" width="300" height="300">
+<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/case%20open.jpg" alt="case open" width="300" height="400">
 
 ## Installation
 
@@ -17,6 +17,8 @@ Configure your wifi and MQTT credentials in the nano_33_water_sensor/credentials
 Flash the arduino nano every microcontroller with the source in the AnalogInput folder.
 
 Review the configuration.yaml file and add to your home assistant installation.  You will need to add the MAC address of your nano IOT 33 to the file.  You can find this in you router's DHCP table along with the IP address.
+
+<img src="https://raw.githubusercontent.com/kevincw01/smart-water-pressure-sensor/main/installed.jpg" alt="case open" width="300" height="800">
 
 ## Usage
 
