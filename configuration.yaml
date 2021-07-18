@@ -1,6 +1,20 @@
 sensor:
 
-  - platform: mqtt
-    state_topic: "arduino/Arduino-YOUR_MAC_HERE/sensor/water-pressure"
-    name: "water pressure sensor"
+  - platform: mqtt  
+    
+    state_topic: "arduino/Arduino-YOUR_MAC_ADDR/sensor/water-pressure"
+    name: "water sensor pressure"
+
     unit_of_measurement: "psi"
+
+    value_template: "{{ value_json.pressure }}"
+  
+  - platform: mqtt
+
+    name: "water sensor rssi"
+
+    state_topic: "arduino/Arduino-YOUR_MAC_ADDR/sensor/water-pressure"
+
+    unit_of_measurement: "dBm"
+
+    value_template: "{{ value_json.wifi }}"
