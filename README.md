@@ -1,6 +1,6 @@
 # smart water pressure sensor
 
-This project pairs a pressure transducer with 2 microcontrollers which read and publishe the water pressure periodically to an mqtt server.  
+This project pairs a pressure transducer with 2 microcontrollers which read and publish the water pressure periodically to an mqtt server.  
 
 Why 2 microcontrollers?  Because the pressure transducers I found are all 5V-based and all the microcontrollers I found that have wifi connectivity are 3.3V-based -- annoying.  According to what I read, you cannot use a voltage divider network or a ttl-voltage converter chip for these analog sensors and get reliable readings.  
 
