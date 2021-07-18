@@ -1,12 +1,25 @@
 /****************************************************************************************************************************************************
- *  DESCRIPTION:monitors water pressure and sends to mqtt 
+ *  DESCRIPTION:monitors water pressure from nano every connected to 5v pressure transducer and sends to mqtt 
  *
  *  Author: Kevin Williams
  ****************************************************************************************************************************************************/
 
+//#define DEBUG //turn on debug statements
+//#define SIM_RX //simulate other microcontroller and pressure transducer w rand pressures
+
+#ifdef DEBUG
+  #define DEBUG_PRINTLN(x)  Serial.println (x)
+  #define DEBUG_PRINT(x)  Serial.print (x)
+#else
+  #define DEBUG_PRINTLN(x)
+  #define DEBUG_PRINT(x)
+#endif
+
 #include <WiFiNINA.h> 
 #include <PubSubClient.h>
 #include "credentials.h"
+#include <stdlib.h>
+#include <ArduinoJson.h>
 
 #define LED_PIN   LED_BUILTIN
 
@@ -52,15 +65,13 @@ bool checkChecksum(char* stringData, char* strArray[]) {
   char *str;
   int count = 0;
   
-  //Serial.println("spliting string");
-  
   if(strlen(stringData) < 5) {
     Serial.print("somthings wrong, skipping.  strlen=");
     Serial.println(strlen(stringData));  
   } else {
     while ((str = strtok_r(stringData, ",", &stringData)) != NULL)
     {
-      //Serial.println(str);
+      DEBUG_PRINTLN(str);
       strArray[count] = str;
       count++;
     }
@@ -70,15 +81,15 @@ bool checkChecksum(char* stringData, char* strArray[]) {
     strcat(str1, ",");
     strcat(str1, strArray[1]);
     char *checkResult = str1;
-    //Serial.print("split off checksum: ");
-    //Serial.println(checkResult);
+    DEBUG_PRINT("split off checksum: ");
+    DEBUG_PRINTLN(checkResult);
     
     uint16_t checksum = calcCRC(checkResult);
-    //Serial.print("checksum=");
-    //Serial.println(checksum);
+    DEBUG_PRINT("checksum=");
+    DEBUG_PRINTLN(checksum);
     if(checksum == atoi(strArray[2])) {
       success=true;
-      //Serial.println("checksum passed");
+      DEBUG_PRINTLN("checksum passed");
     } else
       Serial.println("checksum failed");
   }
@@ -104,7 +115,7 @@ void setup_wifi()
     if (now - last > 10000) 
     {
       last = now;
-      Serial.println("Wifi not connecting....ugh");
+      Serial.println("Wifi not connecting....trying to reset");
     }
       //show status externally via led (fast blink means wifi no connected)
       digitalWrite(LED_PIN, HIGH);
@@ -112,6 +123,7 @@ void setup_wifi()
       Serial.print(".");
       digitalWrite(LED_PIN, LOW);
       delay(150);
+      NVIC_SystemReset(); 
     
   }
   digitalWrite(LED_PIN, LOW);  //ensure led is off after wifi connect
@@ -147,18 +159,18 @@ void reconnect()
   while (!client.connected()) 
   {
     Serial.print("Attempting MQTT connection...");
-    char clientId[] = "Arduino-";
+    char clientId[25] = "Arduino-";
     char prefix[] = "arduino/";
+    strcat(clientId,MAC_addr);
     strcpy(pubTopic,prefix);
     strcat(pubTopic,clientId);
-    strcat(pubTopic,MAC_addr);
     strcat(pubTopic,pubTopicPost);
-    //TODO: add clientid to pubTopic
     
     // Attempt to connect
-    if (client.connect("pressure01", mqttUsername, mqttPassword))
+    if (client.connect(clientId, mqttUsername, mqttPassword))
     {
-      Serial.println("connected");
+      Serial.print("connected w clientId=");
+      Serial.println(clientId);
       // ... and resubscribe
       //client.subscribe(subTopic);
     } else 
@@ -170,12 +182,8 @@ void reconnect()
       //show status externally via led (slow blink means mqtt not connected)
       for(int i=0;i<5;i++) {  
         digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-        Serial.println("led on");
-        Serial.flush();
         delay(500);                       // wait for a second
         digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-        Serial.println("LED OFF");
-        Serial.flush();
         delay(500);
       }
     }
@@ -216,8 +224,8 @@ void recvWithStartEndMarkers() {
 
 void showNewData() {
     if (newData == true) {
-        Serial.print("This just in ... ");
-        Serial.println(receivedChars);
+        DEBUG_PRINT("This just in ... ");
+        DEBUG_PRINTLN(receivedChars);
         newData = false;
     }
 }
@@ -232,8 +240,28 @@ void setup()
   client.setCallback(callback);
 }
 
+void publish_mqtt(int v, char* v_s, int l) {
+  
+  Serial.println(v_s);
+  Serial.print("on topic: ");
+  Serial.print(pubTopic);
+  Serial.print(" at time= ");
+  Serial.println(l);
+
+  StaticJsonDocument<200> doc;
+  char jsonStr[128];
+
+  doc["pressure"] = v_s;
+  doc["wifi"] = WiFi.RSSI();
+
+  serializeJson(doc, jsonStr);
+  client.publish(pubTopic,jsonStr); 
+}
+
 void loop() 
 {
+  char value_s[128];
+  
   if (!client.connected()) 
   {
     reconnect();
@@ -245,56 +273,50 @@ void loop()
   {
     lastMsg = now;
 
-    recvWithStartEndMarkers();
-    //showNewData();
+    #ifdef SIM_RX
+      newData = true; //debug
+    #else
+      recvWithStartEndMarkers();
+    #endif
+            
     if (newData == true) {
-      //Serial.print("This just in ... ");
-      //Serial.println(receivedChars);
+      DEBUG_PRINTLN(receivedChars);
       newData = false;
 
       char* b = receivedChars;
 
       char* strArray[3];
-      if(checkChecksum(b, strArray)) {
-        //checksum passed for data rx from serial board
-        value = atoi(strArray[1]);
-        //Serial.print("rx pressure: ");
-        //Serial.println(value);
+      
+      #ifdef SIM_RX
+        if(1) {
+          value = rand() % 100 ; 
+      #else
+        if(checkChecksum(b, strArray)) {
+          //checksum passed for data rx from serial board
+          value = atoi(strArray[1]);
+      #endif   
+        
+        itoa(value,value_s,10);
+    
+        DEBUG_PRINT("rx pressure: ");
+        DEBUG_PRINTLN(value_s);
 
         //only publish every 5 minutes or if pressure has changed by 2 psi or more
         if(abs(last_value - value) > 1) {           
           //pressure differnt by 2+ psi, publish
           lastPublish = now;  //record last time we published
           
-          Serial.print("publishing: ");
-          Serial.println(value);
-          Serial.print("on topic: ");
-          Serial.print(pubTopic);
-          Serial.print(" at time= ");
-          Serial.println(lastPublish);
-          
-          client.publish(pubTopic, strArray[1]); 
+          publish_mqtt(value,value_s,lastPublish); 
         } else {
           //publsh even if not new every 5 minutes
           if(now - lastPublish > 300000) {
             //unique value read, publish
             lastPublish = now;  //record last time we published
-            
-            Serial.print("publishing due to 5min timeout: ");
-            Serial.println(value);
-            Serial.print("on topic: ");
-            Serial.print(pubTopic);
-            Serial.print(" at time= ");
-            Serial.println(lastPublish);
-            
-            client.publish(pubTopic, strArray[1]); 
+
+            Serial.print("publishing: ");
+            publish_mqtt(value,value_s,lastPublish); 
           } else {
-            Serial.print("not publishing bc not 2+psi different, value= ");
-            Serial.print(value);
-            Serial.print(", time= ");
-            Serial.print(now);
-            Serial.print(", last publish= ");
-            Serial.println(lastPublish);
+            Serial.println("not publishing bc not 2+psi different");
           }
         }
         last_value = value;
@@ -304,6 +326,6 @@ void loop()
 
       memset(receivedChars, 0, 32);
     } else
-      Serial.println("ignorning, corrupt data");
+      Serial.println("Error: pressure transducer microcontroller not functioning");
   }
 }
